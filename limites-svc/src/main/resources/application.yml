@@ -1,0 +1,19 @@
+server:
+  port: 8081
+
+spring:
+  datasource:
+    driver-class-name: org.postgresql.Driver
+    url: jdbc:postgresql://localhost:5432/limite
+    hikari:
+      username: limite
+      password: limite_pass
+  jpa:
+    properties:
+      hibernate:
+        dialect: org.hibernate.dialect.PostgreSQL94Dialect
+        show_sql: true
+        temp:
+          use_jdbc_metadata_default: false
+    hibernate:
+      ddl-auto: update
