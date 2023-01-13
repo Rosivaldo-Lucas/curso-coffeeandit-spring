@@ -1,5 +1,6 @@
 package br.com.rosivaldolucas.coffeeandit.transactionbff.api;
 
+import br.com.rosivaldolucas.coffeeandit.transactionbff.domain.TransacaoService;
 import br.com.rosivaldolucas.coffeeandit.transactionbff.dto.TransacaoDto;
 import br.com.rosivaldolucas.coffeeandit.transactionbff.dto.TransacaoRequestDto;
 import io.swagger.v3.oas.annotations.Operation;
@@ -9,15 +10,24 @@ import io.swagger.v3.oas.annotations.enums.ParameterIn;
 import io.swagger.v3.oas.annotations.responses.ApiResponse;
 import io.swagger.v3.oas.annotations.responses.ApiResponses;
 import io.swagger.v3.oas.annotations.tags.Tag;
+import org.springframework.http.HttpStatus;
 import org.springframework.http.MediaType;
 import org.springframework.web.bind.annotation.*;
+import org.springframework.web.server.ResponseStatusException;
 import reactor.core.publisher.Mono;
+
+import java.util.Optional;
 
 @RestController
 @RequestMapping("/transacoes")
 @Tag(name = "/transacoes", description = "Grupo de API´s para manipulação de transações financeiras.")
 public class TransactionController {
 
+    private final TransacaoService transacaoService;
+
+    public TransactionController(final TransacaoService transacaoService) {
+        this.transacaoService = transacaoService;
+    }
 
     @Operation(description = "API para buscar as transações persistidas por id.")
     @ApiResponses(value = {
@@ -31,7 +41,13 @@ public class TransactionController {
     })
     @GetMapping(value = "/{id}",  produces = MediaType.APPLICATION_JSON_VALUE, consumes = MediaType.APPLICATION_JSON_VALUE)
     public Mono<TransacaoDto> buscarTransacao(@PathVariable("id") final String uuid) {
-        return Mono.empty();
+        final Optional<TransacaoDto> transacao = this.transacaoService.buscar(uuid);
+
+        if (transacao.isPresent()) {
+            return Mono.just(transacao.get());
+        }
+
+        throw new ResponseStatusException(HttpStatus.NOT_FOUND, "Recurso não encontrado.");
     }
 
     @Operation(description = "API para criar uma transação financeira.")
@@ -43,7 +59,13 @@ public class TransactionController {
     })
     @PostMapping(produces = MediaType.APPLICATION_JSON_VALUE, consumes = MediaType.APPLICATION_JSON_VALUE)
     public Mono<TransacaoDto> enviarTransacao(@RequestBody final TransacaoRequestDto transacaoRequestDto) {
-        return Mono.empty();
+        final Optional<TransacaoDto> transacao = this.transacaoService.salvar(transacaoRequestDto);
+
+        if (transacao.isPresent()) {
+            return Mono.just(transacao.get());
+        }
+
+        throw new ResponseStatusException(HttpStatus.NOT_FOUND, "Recurso não encontrado.");
     }
 
     @Operation(description = "API para confirmar a transação financeira.")
